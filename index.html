@@ -9,13 +9,32 @@
   <body>
     <div id="joinGame">
       <h1>Welcome to QNA!</h1>
-      <div id="name" contenteditable="true" onkeyup="checkU()">Name</div>
-      <div id="pin" contenteditable="true" onkeyup="checkP()">Pin</div>
+      <div class="text" id="name" contenteditable="true" onkeyup="checkU()">Name</div>
+      <div class="text" id="pin" contenteditable="true" onkeyup="checkP()">Pin</div>
       <button id="join" onclick="join()">Join</button>
     </div>
     <div id="lobby">
       <h1>Welcome to QNA!<br>Your Game Pin: <div id="showpin" style="display: inline;"></div></h1>
-      <h1>Waiting for players... (<div id="showplayers" style="display:inline;"></div>)<br><div id="showplayerlist" style="display:inline;"></div></h1>
+      <h1>Waiting for players... (<div id="showplayers" style="display: inline;"></div>)<br><div id="showplayerlist" style="display:inline;"></div></h1>
+    </div>
+    <div id="ask">
+      <h1>Ask a question (it can be anything)!<br>The more interesting, the better!</h1>
+      <div class="text" id="question" contenteditable="true">Question</div>
+      <button id="submit" onclick="sendQuestion()">Submit</button>
+    </div>
+    <div id="ans">
+      <h1>Answer the question:<br><div id="questionToAnswer" style="display: inline;"></div></h1>
+      <div class="text" id="answer" contenteditable="true">Answer</div>
+      <button id="submitans" onclick="sendAnswer()">Submit</button>
+    </div>
+    <div id="vote">
+      <h1>pick a thing lol</h1>
+    </div>
+    <div id="voting">
+      <h1>Please wait while another player votes.</h1>
+    </div>
+    <div id="wait">
+      <h1>Waiting for other players...</h1>
     </div>
   </body>
 </html>
