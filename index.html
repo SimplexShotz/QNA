@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QNA</title>
+    <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase.js"></script>
+    <script src="javascript.js"></script>
+    <link rel="stylesheet" href="stylesheet.css">
+  </head>
+  <body>
+    <div id="joinGame">
+      <h1>Welcome to QNA!</h1>
+      <div id="name" contenteditable="true" onkeyup="checkU()">Name</div>
+      <div id="pin" contenteditable="true" onkeyup="checkP()">Pin</div>
+      <button id="join" onclick="join()">Join</button>
+    </div>
+    <div id="lobby">
+      <h1>Welcome to QNA!<br>Your Game Pin: <div id="showpin" style="display: inline;"></div></h1>
+      <h1>Waiting for players... (<div id="showplayers" style="display:inline;"></div>)<br><div id="showplayerlist" style="display:inline;"></div></h1>
+    </div>
+  </body>
+</html>
