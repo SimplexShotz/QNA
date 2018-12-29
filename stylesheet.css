@@ -9,7 +9,7 @@ body {
   margin: 0px;
   padding: 250px 20px 20px 20px;
 }
-#pin, #name {
+.text {
   width: 100px;
   height: 20pt;
   position: relative;
@@ -30,12 +30,17 @@ body {
   left: calc(50% - 100px - 6px);
   margin-bottom: 10px;
 }
-#pin:focus, #name:focus {
+#question, #answer {
+  width: 400px;
+  height: calc(20pt + 20pt + 20pt);
+  left: calc(50% - 200px - 6px);
+}
+.text:focus {
   outline: none;
   border-color: rgb(200, 200, 200);
 }
 button {
-  width: 75px;
+  width: 80px;
   height: 40px;
   background-color: rgb(255, 255, 255);
   border-color: rgb(225, 225, 225);
@@ -49,6 +54,6 @@ button:focus {
   outline: none;
   border-color: rgb(200, 200, 200);
 }
-#lobby {
+#lobby, #ask, #ans, #vote, #voting, #wait {
   display: none;
 }
