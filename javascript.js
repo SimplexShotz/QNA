@@ -68,7 +68,7 @@ function checkP() {
 }
 
 function showHide(show) {
-  var hide = ["joinGame", "lobby", "ask", "ans", "vote", "voting", "wait"];
+  var hide = ["joinGame", "lobby", "ask", "ans", "vote", "wait"];
   for (var i = 0; i < hide.length; i++) {
     document.getElementById(hide[i]).style.display = "none";
   }
@@ -98,17 +98,53 @@ function refresh() {
 function update(state, data) {
   switch(state) {
     case "lobby":
+      if (prev !== "lobby") {
+        if (gameID) {
+          for (var i in data.players) {
+            if (i !== "length") {
+              ref.games.child(gameID).child("players").child(i).child("ready").set(false);
+            }
+          }
+        }
+        waiting = false;
+      }
+      prev = "lobby";
       showHide("lobby");
       document.getElementById("showplayers").innerHTML = data.players.length + " / 3";
       var players = "";
       for (var i in data.players) {
         if (i !== "length") {
-          players += data.players[i] + "<br>";
+          players += (data.players[i].ready ? "(Ready) " : "") + data.players[i].name + ": " + data.players[i].score + " points<br>";
         }
       }
       document.getElementById("showplayerlist").innerHTML = players;
+      if (gameID) {
+        var dat = {
+          length: 0
+        };
+        ref.games.child(gameID).child("gameData").child("questions").set(dat);
+      }
+      var finished = true;
+      for (var i in data.players) {
+        if (i !== "length" && !data.players[i].ready) {
+          finished = false;
+        }
+      }
+      if (data.players.length < 3) {
+        finished = false;
+      }
+      if (finished) {
+        ref.games.child(gameID).child("gameData").child("state").set("asking");
+        setTimeout(() => {
+          waiting = false;
+          refresh();
+        }, 0);
+      }
     break;
     case "asking":
+      if (prev !== "asking") {
+        waiting = false;
+      }
       prev = "asking";
       if (!waiting) {
         showHide("ask");
@@ -136,7 +172,7 @@ function update(state, data) {
             ids.push(i);
           }
         }
-        document.getElementById("questionToAnswer").innerText = qs[ans].q.split("<div>").join("").split("</div>").join("").split("<br>").join("\n");
+        document.getElementById("questionToAnswer").innerText = qs[ans].q.split("<div>").join("").split("</div>").join("").split("<br>").join("");
         ansID = ids[ans];
       }
       var finished = true;
@@ -160,10 +196,35 @@ function update(state, data) {
         waiting = false;
       }
       prev = "voting";
-      // if (!waiting) {
-      showHide("voting");
-      // }
-
+      showHide("vote");
+      if (!waiting) {
+        document.getElementById("answers").innerHTML = "";
+        for (var i in data.gameData.questions) {
+          if (data.gameData.questions[i].p === document.getElementById("name").innerHTML) {
+            document.getElementById("yourQuestion").innerText = data.gameData.questions[i].q.split("<div>").join("").split("</div>").join("").split("<br>").join("");
+            for (var j in data.gameData.questions[i].a) {
+              if (j !== "length" && j !== "vote") {
+                document.getElementById("answers").innerHTML += "<div class=\"btn\" onclick=\"sendVote('" + i + "', '" + j + "')\">" + data.gameData.questions[i].a[j].a + "</div><br>";
+              }
+            }
+          }
+        }
+      }
+      var finished = true;
+      for (var i in data.gameData.questions) {
+        if (i !== "length" && data.gameData.questions[i].a.vote === "") {
+          finished = false;
+          break;
+        }
+      }
+      if (finished) {
+        ref.games.child(gameID).child("gameData").child("state").set("lobby");
+        setTimeout(() => {
+          waiting = false;
+          refresh();
+        }, 0);
+        refresh();
+      }
     break;
     default:
       alert("[ERROR] State not found.\n\nYour game appears to be broken! Try reloading.");
@@ -189,7 +250,11 @@ function join() {
         var data = {
           pin: document.getElementById("pin").innerText,
           players: {
-            admin: document.getElementById("name").innerText,
+            admin: {
+              name: document.getElementById("name").innerText,
+              score: 0,
+              ready: false
+            },
             length: 1
           },
           gameData: {
@@ -210,7 +275,9 @@ function join() {
         document.getElementById("lobby").style.display = "block";
         document.getElementById("showpin").innerHTML = document.getElementById("pin").innerText;
         document.getElementById("showplayers").innerHTML = "1 / 3";
-        document.getElementById("showplayerlist").innerHTML = document.getElementById("name").innerText;
+        setTimeout(() => {
+          refresh();
+        }, 0);
       } else { // Game is full
         if (game.players.length === 3) {
           alert("[ERROR] This game is full!");
@@ -218,7 +285,7 @@ function join() {
           document.getElementById("join").style.width = "75px";
         } else { // Game is not full
           for (var i in d[id].players) {
-            if (d[id].players[i] === document.getElementById("name").innerText) { // Name is taken
+            if (d[id].players[i].name === document.getElementById("name").innerText) { // Name is taken
               alert("[ERROR] Name already taken!");
               document.getElementById("join").innerText = "Join";
               document.getElementById("join").style.width = "75px";
@@ -227,38 +294,50 @@ function join() {
           }
           if (id !== -1) { // Successfuly joined
             document.getElementById("showplayers").innerHTML = (d[id].players.length + 1) + " / 3";
-            var players = "";
-            for (var i in d[id].players) {
-              if (i !== "length") {
-                players += d[id].players[i] + "<br>";
-              }
-            }
-            players += document.getElementById("name").innerText;
-            document.getElementById("showplayerlist").innerHTML = players;
-            ref.games.child(id).child("players").push(document.getElementById("name").innerText);
+            var data = {
+              name: document.getElementById("name").innerText,
+              score: 0,
+              ready: false
+            };
+            ref.games.child(id).child("players").push(data);
             ref.games.child(id).child("players").child("length").set(d[id].players.length + 1);
             setTimeout(() => {
               gameInfo = d[id];
+              refresh();
             }, 0);
             gameID = id;
             document.getElementById("joinGame").style.display = "none";
             document.getElementById("lobby").style.display = "block";
             document.getElementById("showpin").innerHTML = document.getElementById("pin").innerText;
-            if (d[id].players.length + 1 >= 3) {
-              ref.games.child(id).child("gameData").child("state").set("asking");
-              refresh();
-            }
           }
         }
       }
     });
   }
 }
+function ready() {
+  ref.games.once("value", function(data) {
+    var d = data.val();
+    for (var i in d) {
+      if (d[i].pin === gameInfo.pin) {
+        for (var j in d[i].players) {
+          if (j !== "length" && d[i].players[j].name === document.getElementById("name").innerHTML) {
+            ref.games.child(gameID).child("players").child(j).child("ready").set(true);
+          }
+        }
+      }
+    }
+  });
+  setTimeout(() => {
+    refresh();
+  }, 0);
+}
 function sendQuestion() {
   var data = {
     q: document.getElementById("question").innerHTML,
     p: document.getElementById("name").innerHTML,
     a: {
+      vote: "",
       length: 0
     }
   };
@@ -295,6 +374,23 @@ function sendAnswer() {
   } else {
     refresh();
   }
+}
+function sendVote(q, v) {
+  // q - question, v - vote
+  ref.games.once("value", function(data) {
+    var d = data.val();
+    for (var i in d) {
+      if (d[i].pin === gameInfo.pin) {
+        ref.games.child(gameID).child("gameData").child("questions").child(q).child("a").child("vote").set(v);
+        for (var j in d[i].players) {
+          if (j !== "length" && d[i].players[j].name === d[i].gameData.questions[q].a[v].p) {
+            ref.games.child(gameID).child("players").child(j).child("score").set(d[i].players[j].score + 1);
+          }
+        }
+      }
+    }
+  });
+  showHide("wait");
 }
 
 ref.games.on("value", function(data) {
