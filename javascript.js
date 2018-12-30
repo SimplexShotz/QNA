@@ -99,18 +99,17 @@ function update(state, data) {
   switch(state) {
     case "lobby":
       if (prev !== "lobby") {
-        if (gameID) {
-          for (var i in data.players) {
-            if (i !== "length") {
-              ref.games.child(gameID).child("players").child(i).child("ready").set(false);
-            }
-          }
-        }
         waiting = false;
       }
       prev = "lobby";
       showHide("lobby");
-      document.getElementById("showplayers").innerHTML = data.players.length + " / 3";
+      var playersReady = 0;
+      for (var i in data.players) {
+        if (i !== "length" && data.players[i].ready) {
+          playersReady++;
+        }
+      }
+      document.getElementById("showplayers").innerHTML = playersReady + " / " + (data.players.length);
       var players = "";
       for (var i in data.players) {
         if (i !== "length") {
@@ -118,12 +117,6 @@ function update(state, data) {
         }
       }
       document.getElementById("showplayerlist").innerHTML = players;
-      if (gameID) {
-        var dat = {
-          length: 0
-        };
-        ref.games.child(gameID).child("gameData").child("questions").set(dat);
-      }
       var finished = true;
       for (var i in data.players) {
         if (i !== "length" && !data.players[i].ready) {
@@ -149,7 +142,7 @@ function update(state, data) {
       if (!waiting) {
         showHide("ask");
       }
-      if (data.gameData.questions.length >= 3) {
+      if (data.gameData.questions.length >= data.players.length) {
         ref.games.child(gameID).child("gameData").child("state").set("answering");
         setTimeout(() => {
           waiting = false;
@@ -218,6 +211,20 @@ function update(state, data) {
         }
       }
       if (finished) {
+        for (var i in data.players) {
+          if (i !== "length") {
+            ref.games.child(gameID).child("players").child(i).child("ready").set(false);
+          }
+        }
+        var dat = {
+          length: 0
+        };
+        ref.games.child(gameID).child("gameData").child("questions").set(dat);
+        ans = 0;
+        ansID = "";
+        document.getElementById("question").innerHTML = "Question";
+        document.getElementById("answer").innerHTML = "Answer";
+        document.getElementById("ready").innerHTML = "Ready";
         ref.games.child(gameID).child("gameData").child("state").set("lobby");
         setTimeout(() => {
           waiting = false;
@@ -274,16 +281,16 @@ function join() {
         document.getElementById("joinGame").style.display = "none";
         document.getElementById("lobby").style.display = "block";
         document.getElementById("showpin").innerHTML = document.getElementById("pin").innerText;
-        document.getElementById("showplayers").innerHTML = "1 / 3";
+        document.getElementById("showplayers").innerHTML = "0 / 1";
         setTimeout(() => {
           refresh();
         }, 0);
-      } else { // Game is full
-        if (game.players.length === 3) {
-          alert("[ERROR] This game is full!");
+      } else { // Game has started
+        if (game.gameData.state !== "lobby") {
+          alert("[ERROR] This game has already started!");
           document.getElementById("join").innerText = "Join";
           document.getElementById("join").style.width = "75px";
-        } else { // Game is not full
+        } else { // Game has not started (attempt to join)
           for (var i in d[id].players) {
             if (d[id].players[i].name === document.getElementById("name").innerText) { // Name is taken
               alert("[ERROR] Name already taken!");
@@ -293,7 +300,13 @@ function join() {
             }
           }
           if (id !== -1) { // Successfuly joined
-            document.getElementById("showplayers").innerHTML = (d[id].players.length + 1) + " / 3";
+            var playersReady = 0;
+            for (var i in d[id].players) {
+              if (i !== "length" && d[id].players[i].ready) {
+                playersReady++;
+              }
+            }
+            document.getElementById("showplayers").innerHTML = playersReady + " / " + (d[id].players.length + 1);
             var data = {
               name: document.getElementById("name").innerText,
               score: 0,
@@ -322,7 +335,12 @@ function ready() {
       if (d[i].pin === gameInfo.pin) {
         for (var j in d[i].players) {
           if (j !== "length" && d[i].players[j].name === document.getElementById("name").innerHTML) {
-            ref.games.child(gameID).child("players").child(j).child("ready").set(true);
+            if (!d[i].players[j].ready) {
+              document.getElementById("ready").innerHTML = "Unready";
+            } else {
+              document.getElementById("ready").innerHTML = "Ready";
+            }
+            ref.games.child(gameID).child("players").child(j).child("ready").set(!d[i].players[j].ready);
           }
         }
       }
