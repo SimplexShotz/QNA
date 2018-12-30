@@ -81,7 +81,7 @@ function showHide(show) {
 }
 
 function refresh() {
-  setTimeout(() => {
+  setTimeout(function() {
     ref.games.once("value", function(data) {
       var d = data.val();
       for (var i in d) {
@@ -128,7 +128,7 @@ function update(state, data) {
       }
       if (finished) {
         ref.games.child(gameID).child("gameData").child("state").set("asking");
-        setTimeout(() => {
+        setTimeout(function() {
           waiting = false;
           refresh();
         }, 0);
@@ -144,7 +144,7 @@ function update(state, data) {
       }
       if (data.gameData.questions.length >= data.players.length) {
         ref.games.child(gameID).child("gameData").child("state").set("answering");
-        setTimeout(() => {
+        setTimeout(function() {
           waiting = false;
           refresh();
         }, 0);
@@ -177,7 +177,7 @@ function update(state, data) {
       }
       if (finished) {
         ref.games.child(gameID).child("gameData").child("state").set("voting");
-        setTimeout(() => {
+        setTimeout(function() {
           waiting = false;
           refresh();
         }, 0);
@@ -190,7 +190,7 @@ function update(state, data) {
       }
       prev = "voting";
       if (!waiting) {
-      	showHide("vote");
+        showHide("vote");
         document.getElementById("answers").innerHTML = "";
         for (var i in data.gameData.questions) {
           if (data.gameData.questions[i].p === document.getElementById("name").innerHTML) {
@@ -226,7 +226,7 @@ function update(state, data) {
         document.getElementById("answer").innerHTML = "Answer";
         document.getElementById("ready").innerHTML = "Ready";
         ref.games.child(gameID).child("gameData").child("state").set("lobby");
-        setTimeout(() => {
+        setTimeout(function() {
           waiting = false;
           refresh();
         }, 0);
@@ -282,7 +282,7 @@ function join() {
         document.getElementById("lobby").style.display = "block";
         document.getElementById("showpin").innerHTML = document.getElementById("pin").innerText;
         document.getElementById("showplayers").innerHTML = "0 / 1";
-        setTimeout(() => {
+        setTimeout(function() {
           refresh();
         }, 0);
       } else { // Game has started
@@ -314,7 +314,7 @@ function join() {
             };
             ref.games.child(id).child("players").push(data);
             ref.games.child(id).child("players").child("length").set(d[id].players.length + 1);
-            setTimeout(() => {
+            setTimeout(function() {
               gameInfo = d[id];
               refresh();
             }, 0);
@@ -346,7 +346,7 @@ function ready() {
       }
     }
   });
-  setTimeout(() => {
+  setTimeout(function() {
     refresh();
   }, 0);
 }
