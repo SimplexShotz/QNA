@@ -16,6 +16,7 @@
     <div id="lobby">
       <h1>Welcome to QNA!<br>Your Game Pin: <div id="showpin" style="display: inline;"></div></h1>
       <h1>Waiting for players... (<div id="showplayers" style="display: inline;"></div>)<br><div id="showplayerlist" style="display:inline;"></div></h1>
+      <div class="btn" onclick="ready()">Ready</div>
     </div>
     <div id="ask">
       <h1>Ask a question (it can be anything)!<br>The more interesting, the better!</h1>
@@ -28,10 +29,8 @@
       <button id="submitans" onclick="sendAnswer()">Submit</button>
     </div>
     <div id="vote">
-      <h1>pick a thing lol</h1>
-    </div>
-    <div id="voting">
-      <h1>Please wait while another player votes.</h1>
+      <h1>Your question was: <div id="yourQuestion" style="display: inline;"></div><br>Pick your favorite answer:</h1>
+      <div id="answers"></div>
     </div>
     <div id="wait">
       <h1>Waiting for other players...</h1>
