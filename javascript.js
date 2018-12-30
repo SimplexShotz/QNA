@@ -53,6 +53,9 @@ var gameInfo = {};
 var ans = 0;
 var ansID = "";
 
+var prev = "";
+var waiting = false;
+
 function checkU() {
   if (document.getElementById("name").innerText.split("").length > 12) {
     document.getElementById("name").innerText = document.getElementById("name").innerText.split("").splice(0, 12).join("");
@@ -71,6 +74,9 @@ function showHide(show) {
   }
   if (show) {
     document.getElementById(show).style.display = "block";
+  }
+  if (show === "wait") {
+    waiting = true;
   }
 }
 
@@ -103,38 +109,60 @@ function update(state, data) {
       document.getElementById("showplayerlist").innerHTML = players;
     break;
     case "asking":
-      showHide("ask");
+      prev = "asking";
+      if (!waiting) {
+        showHide("ask");
+      }
       if (data.gameData.questions.length >= 3) {
         ref.games.child(gameID).child("gameData").child("state").set("answering");
-        refresh();
+        setTimeout(() => {
+          waiting = false;
+          refresh();
+        }, 0);
       }
     break;
     case "answering":
-      showHide("ans");
-      var qs = [];
-      var ids = [];
-      for (var i in data.gameData.questions) {
-        if (data.gameData.questions[i].p !== document.getElementById("name").innerHTML) {
-          qs.push(data.gameData.questions[i]);
-          ids.push(i);
-        }
+      if (prev !== "answering") {
+        waiting = false;
       }
-      document.getElementById("questionToAnswer").innerText = qs[ans].q;
-      ansID = ids[ans];
+      prev = "answering";
+      if (!waiting) {
+        showHide("ans");
+        var qs = [];
+        var ids = [];
+        for (var i in data.gameData.questions) {
+          if (data.gameData.questions[i].p !== document.getElementById("name").innerHTML) {
+            qs.push(data.gameData.questions[i]);
+            ids.push(i);
+          }
+        }
+        document.getElementById("questionToAnswer").innerText = qs[ans].q.split("<div>").join("").split("</div>").join("").split("<br>").join("\n");
+        ansID = ids[ans];
+      }
       var finished = true;
       for (var i in data.gameData.questions) {
-        if (i !== "length" && data.gameData.questions[i].a.length !== qs.length) {
+        if (i !== "length" && data.gameData.questions[i].a.length !== qs.length - 1) {
           finished = false;
           break;
         }
       }
       if (finished) {
         ref.games.child(gameID).child("gameData").child("state").set("voting");
+        setTimeout(() => {
+          waiting = false;
+          refresh();
+        }, 0);
         refresh();
       }
     break;
     case "voting":
+      if (prev !== "voting") {
+        waiting = false;
+      }
+      prev = "voting";
+      // if (!waiting) {
       showHide("voting");
+      // }
 
     break;
     default:
