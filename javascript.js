@@ -189,8 +189,8 @@ function update(state, data) {
         waiting = false;
       }
       prev = "voting";
-      showHide("vote");
       if (!waiting) {
+      	showHide("vote");
         document.getElementById("answers").innerHTML = "";
         for (var i in data.gameData.questions) {
           if (data.gameData.questions[i].p === document.getElementById("name").innerHTML) {
