@@ -19,7 +19,7 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 var ref = {
-	games: database.ref("games"),
+  games: database.ref("games"),
 
 };
 
@@ -343,7 +343,15 @@ function join() {
         } else { // Game has not started (attempt to join)
           for (var i in d[id].players) {
             if (d[id].players[i].name === document.getElementById("name").innerText) { // Name is taken
-              alert("[ERROR] Name already taken!");
+              if (confirm("That name has already been taken! Continuing will overwrite that player.")) {
+                gameInfo = d[id];
+                if (d[id].players[i].ready) {
+                  document.getElementById("ready").innerHTML = "Unready";
+                } else {
+                  document.getElementById("ready").innerHTML = "Ready";
+                }
+                refresh();
+              }
               document.getElementById("join").innerText = "Join";
               document.getElementById("join").style.width = "75px";
               id = -1;
