@@ -287,7 +287,57 @@ function join() {
         }, 0);
       } else { // Game has started
         if (game.gameData.state !== "lobby") {
-          alert("[ERROR] This game has already started!");
+          for (var i in d[id].players) {
+            if (d[id].players[i].name === document.getElementById("name").innerText) { // Rejoin
+              if (confirm("You are about to rejoin the game.")) {
+                gameInfo = d[id];
+                var wting = false;
+                if (d[id].gameData.state === "asking") {
+                  for (var j in d[id].gameData.questions) {
+                    if (d[id].gameData.questions[j].p === document.getElementById("name").innerText) {
+                      wting = true;
+                      break;
+                    }
+                  }
+                }
+                if (d[id].gameData.state === "answering") {
+                  var cura = 0; // current answer
+                  for (var j in d[id].gameData.questions) {
+                    for (var k in d[id].gameData.questions[j].a) {
+                      if (d[id].gameData.questions[j].a[k].p === document.getElementById("name").innerText) {
+                        cura++;
+                      }
+                    }
+                  }
+                  ans = cura;
+                  if (ans >= d[id].gameData.questions.length - 1) {
+                    wting = true;
+                  }
+                }
+                if (d[id].gameData.state === "voting") {
+                  for (var j in d[id].gameData.questions) {
+                    if (d[id].gameData.questions[j].p === document.getElementById("name").innerText) {
+                      if (d[id].gameData.questions[j].a.vote !== "") {
+                        wting = true;
+                        break;
+                      }
+                    }
+                  }
+                }
+                console.log(wting);
+                if (wting) {
+                  showHide("wait");
+                } else {
+                  refresh();
+                }
+                id = -1;
+                break;
+              }
+            }
+          }
+          if (id !== -1) {
+            alert("[ERROR] This game has already started!");
+          }
           document.getElementById("join").innerText = "Join";
           document.getElementById("join").style.width = "75px";
         } else { // Game has not started (attempt to join)
