@@ -170,7 +170,7 @@ function update(state, data) {
       }
       var finished = true;
       for (var i in data.gameData.questions) {
-        if (i !== "length" && data.gameData.questions[i].a.length !== qs.length - 1) {
+        if (i !== "length" && data.gameData.questions[i].a.length < data.players.length - 1) {
           finished = false;
           break;
         }
